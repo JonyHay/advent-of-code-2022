@@ -11,6 +11,7 @@ def print_map(map):
 
 heightmap = None
 start = None
+starts = []
 end = None
 
 for line in open('12_hill_climb/input.txt', 'r').readlines():
@@ -19,9 +20,11 @@ for line in open('12_hill_climb/input.txt', 'r').readlines():
         heightmap = [[] for i in range(len(line.strip()))]
     for s in list(line.strip()):
         if s == "S":
-            start = (x, len(heightmap[x]))
+            start = (x, len(heightmap[x]))        
         elif s == "E":
             end = (x, len(heightmap[x]))
+        if s == "S" or s == "a":
+            starts.append("{},{}".format(x, len(heightmap[x])))
         heightmap[x].append(s)
         x += 1
      
@@ -33,10 +36,12 @@ graph = {}
 
 ### Letter scoring
 letter_scores = {}
+j = 122
 for i in range(97, 123):
-    letter_scores[chr(i)] = i
-letter_scores["S"] = 97
-letter_scores["E"] = 122
+    letter_scores[chr(i)] = j
+    j -= 1
+letter_scores["S"] = 122
+letter_scores["E"] = 97
 
 def letter_score(n):
     return letter_scores[n]
@@ -52,7 +57,6 @@ def move_between(x1, y1, x2, y2):
     return b == a + 1
 
 
-source = None
 destination = None
 neighbs = 0
 for y in range(height):
@@ -75,54 +79,63 @@ for y in range(height):
         if y < (height - 1) and move_between(x, y, x, y + 1):
             graph[index].append("{},{}".format(x, y + 1))
             neighbs += 1 
-        if heightmap[x][y] == "S":
-            source = index
         if heightmap[x][y] == "E":
             destination = index
 
-################################# ALL GOOD SO FAR
+#################################
 
-print("Find route from {} to {}".format(source, destination))
+def find_route_length(source, destination):
 
-# Initialise
+    print("Find route from {} to any a".format(source))
 
-dist = {}
-prev = {}
-queue = []
-seen = []
+    # Initialise
 
-for node in graph.keys():
-    dist[node] = math.inf
-    prev[node] = {}
-    queue.append(node)
-dist[source] = 0
+    dist = {}
+    prev = {}
+    queue = []
+    seen = []
 
+    for node in graph.keys():
+        dist[node] = math.inf
+        prev[node] = {}
+        queue.append(node)
+    dist[source] = 0
 
-while (queue): # Queue is not empty
-    #print("Queue Size = ", len(queue))
+    while (queue): # Queue is not empty
+        #print("Queue Size = ", len(queue))
 
-    # Find U - the vertex in Q with min dist[u]
-    u = queue[0]
-    for j in queue:
-        if dist[j] < dist[u]:
-            u = j
-    #print("Look at", u)
-    seen.append(u)
+        # Find U - the vertex in Q with min dist[u]
+        u = queue[0]
+        for j in queue:
+            if dist[j] < dist[u]:
+                u = j
+        #print("Look at", u)
+        seen.append(u)
 
-    # Remove U from queue
-    queue.pop(queue.index(u))
+        # Remove U from queue
+        queue.pop(queue.index(u))
 
-    # For each neighbour V of U still in Q
-    # Set of X not in Y
-    neighbours = graph[u]
-    for v in neighbours:
-        #print(" - Neighbour", v)
-        if v not in seen:
-            alt = dist[u] + 1
-            if alt < dist[v]:
-                dist[v] = alt
-                prev[v] = u
-    #print()
+        # For each neighbour V of U still in Q
+        # Set of X not in Y
+        neighbours = graph[u]
+        for v in neighbours:
+            #print(" - Neighbour", v)
+            if v not in seen:
+                alt = dist[u] + 1
+                if alt < dist[v]:
+                    dist[v] = alt
+                    prev[v] = u
+        #print()
+    
 
+    # What to return?
+    return dist
 
-print(dist[destination])
+dist = find_route_length(destination, starts[0])
+
+shortest = set()
+for s in starts:
+    if s in dist and dist[s] < math.inf:
+        shortest.add(dist[s])
+
+print(sorted(shortest)[0])
