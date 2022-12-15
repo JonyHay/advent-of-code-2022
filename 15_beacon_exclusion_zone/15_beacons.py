@@ -1,5 +1,3 @@
-
-
 sensors = []
 beacons = []
 ranges = []
@@ -8,6 +6,7 @@ map_max_x = None
 map_min_y = None
 map_max_y = None
 
+# It's nice to be able to see things
 def print_map(out_of_range = set()):
     if map_max_y - map_min_y > 100: # Do not print wider than console
         return
@@ -30,7 +29,7 @@ def print_map(out_of_range = set()):
                     print(".", end='')
         print()
 
-
+# Also updates map bound variables
 def extract_coordinates(txt):
     global map_min_x, map_max_x, map_min_y, map_max_y
     point = int(txt[(txt.index("x=") + 2):txt.index(",")]), int(txt[(txt.index("y=") + 2):])
@@ -54,23 +53,8 @@ for x in [i.strip().split(":") for i in open('15_beacon_exclusion_zone/input.txt
     beacons.append(extract_coordinates(x[1]))
     ranges.append(distance(sensors[-1], beacons[-1]))
 
-print("Map Bounds:",map_min_x, map_max_x, map_min_y, map_max_y)
-print("Ranges:", ranges)
-
 # Calculate range set
 in_range = set()
-#y = 10
-#for x in range(map_min_x, map_max_x):
-#    # A cell contains no beacon if it is within range of ANY sensor
-#    cell = x, y
-#    for i, s in enumerate(sensors):
-#        if distance(cell, s) <= ranges[i]:
-#            in_range.add(cell)
-
-# Alt method
-# For Each Sensor:
-# Work out all cells within its range
-# And if the cell overlaps with the 
 for i, sensor in enumerate(sensors):
     print(i, sensor)
     y = 2000000
@@ -84,7 +68,6 @@ for i, sensor in enumerate(sensors):
 print("Removing beacon positions from in_range data ...")
 for b in set(beacons):
     in_range.discard(b)
-
 
 print_map(in_range)
 print("Positions in range:", len(in_range))
